@@ -56,7 +56,7 @@ with st.sidebar:
         |------|------|
         | PDF parsing | `pypdf` |
         | Chunking | `RecursiveCharacterTextSplitter` |
-        | Embeddings | `sentence-transformers/all-MiniLM-L6-v2` (local) |
+        | Embeddings | `text-embedding-3-small` via OpenRouter |
         | Vector store | **ChromaDB** (cosine similarity) |
         | LLM | **Llama 3.3 70B** via OpenRouter |
         """
@@ -100,7 +100,7 @@ if uploaded_file and st.session_state.active_doc != uploaded_file.name:
                     "role": "assistant",
                     "content": (
                         f"✅ **{uploaded_file.name}** indexed into **{n_chunks} chunks** in ChromaDB.\n\n"
-                        "Embeddings generated locally with `sentence-transformers/all-MiniLM-L6-v2`.\n\n"
+                        "Embeddings generated with `text-embedding-3-small` via OpenRouter.\n\n"
                         "Ask me anything about the document!"
                     ),
                 }

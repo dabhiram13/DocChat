@@ -4,7 +4,7 @@ DocChat — RAG Pipeline
 Stack (as described on resume):
   • PDF parsing    : pypdf (via LangChain Document format)
   • Chunking       : RecursiveCharacterTextSplitter
-  • Embeddings     : HuggingFace sentence-transformers (local, no API key)
+  • Embeddings     : OpenAI text-embedding-3-small via OpenRouter
   • Vector store   : ChromaDB (cosine similarity)
   • LLM            : OpenRouter API — Llama 3.3 70B (OpenAI-compatible)
 """
@@ -16,28 +16,27 @@ from typing import List, Tuple
 import pypdf
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_chroma import Chroma
-from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage, HumanMessage
 
 
 class RAGPipeline:
     """End-to-end RAG pipeline for PDF question-answering."""
 
-    # Local sentence-transformers model — no API key, runs on CPU
-    EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+    # OpenAI-compatible embedding model via OpenRouter
+    EMBED_MODEL = "openai/text-embedding-3-small"
 
     # Llama 3.3 70B via OpenRouter
     LLM_MODEL = "meta-llama/llama-3.3-70b-instruct"
     OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 
     def __init__(self, api_key: str, persist_directory: str) -> None:
-        # ── Local embeddings (sentence-transformers, runs on CPU) ──────────────
-        self.embeddings = HuggingFaceEmbeddings(
-            model_name=self.EMBED_MODEL,
-            model_kwargs={"device": "cpu"},
-            encode_kwargs={"normalize_embeddings": True},
+        # ── OpenAI embeddings via OpenRouter (no torch/transformers needed) ────
+        self.embeddings = OpenAIEmbeddings(
+            api_key=api_key,
+            base_url=self.OPENROUTER_BASE_URL,
+            model=self.EMBED_MODEL,
         )
 
         # ── LLM via OpenRouter (OpenAI-compatible API) ─────────────────────────
