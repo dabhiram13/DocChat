@@ -57,7 +57,7 @@ with st.sidebar:
         | PDF parsing | `pypdf` |
         | Chunking | `RecursiveCharacterTextSplitter` |
         | Embeddings | `text-embedding-3-small` via OpenRouter |
-        | Vector store | **InMemoryVectorStore** (cosine similarity) |
+        | Vector store | **ChromaDB** (cosine similarity) |
         | LLM | **Llama 3.3 70B** via OpenRouter |
         """
     )

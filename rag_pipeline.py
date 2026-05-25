@@ -1,11 +1,11 @@
 """
 DocChat — RAG Pipeline
 ======================
-Stack:
+Stack (as described on resume):
   • PDF parsing    : pypdf (via LangChain Document format)
   • Chunking       : RecursiveCharacterTextSplitter
   • Embeddings     : OpenAI text-embedding-3-small via OpenRouter
-  • Vector store   : InMemoryVectorStore (langchain-core, no native deps)
+  • Vector store   : ChromaDB (cosine similarity, in-memory)
   • LLM            : OpenRouter API — Llama 3.3 70B (OpenAI-compatible)
 """
 
@@ -15,7 +15,7 @@ from typing import List, Tuple
 
 import pypdf
 from langchain_core.documents import Document
-from langchain_core.vectorstores import InMemoryVectorStore
+from langchain_chroma import Chroma
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_core.messages import SystemMessage, HumanMessage
@@ -32,7 +32,7 @@ class RAGPipeline:
     OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 
     def __init__(self, api_key: str) -> None:
-        # ── OpenAI embeddings via OpenRouter (no torch/protobuf needed) ────────
+        # ── OpenAI embeddings via OpenRouter ───────────────────────────────────
         self.embeddings = OpenAIEmbeddings(
             api_key=api_key,
             base_url=self.OPENROUTER_BASE_URL,
@@ -48,14 +48,14 @@ class RAGPipeline:
             max_tokens=1024,
         )
 
-        self.vectorstore: InMemoryVectorStore | None = None
+        self.vectorstore: Chroma | None = None
         self.retriever = None
 
     # ── Step 1: Ingest PDF ─────────────────────────────────────────────────────
     def process_pdf(self, pdf_path: str) -> int:
         """
-        Parse a PDF, chunk the text, embed each chunk with sentence-transformers,
-        and store vectors in ChromaDB.
+        Parse a PDF, chunk the text, embed each chunk, and store vectors
+        in ChromaDB (in-memory, ephemeral — recreated per session).
 
         Returns:
             Number of chunks indexed.
@@ -82,8 +82,8 @@ class RAGPipeline:
         )
         chunks = splitter.split_documents(documents)
 
-        # Embed each chunk and store in memory (no native deps)
-        self.vectorstore = InMemoryVectorStore.from_documents(
+        # Embed each chunk and index in ChromaDB (ephemeral, no disk persist)
+        self.vectorstore = Chroma.from_documents(
             documents=chunks,
             embedding=self.embeddings,
         )
@@ -100,7 +100,7 @@ class RAGPipeline:
     def query(self, question: str) -> Tuple[str, List[str]]:
         """
         RAG retrieval-then-generation:
-          1. Embed the question using the same sentence-transformers model.
+          1. Embed the question using text-embedding-3-small via OpenRouter.
           2. Retrieve top-4 most similar chunks from ChromaDB (cosine similarity).
           3. Pass chunks as grounding context to Llama 3.3 via OpenRouter.
 
