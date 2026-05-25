@@ -1,0 +1,42 @@
+# ── Secrets — NEVER commit these ──────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ── Python ────────────────────────────────────────────────────────────────────
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ── ChromaDB vector store (generated at runtime) ──────────────────────────────
+chroma_db/
+chroma_*/
+*.chroma/
+
+# ── HuggingFace model cache ────────────────────────────────────────────────────
+.cache/
+models/
+
+# ── Node / TypeScript (legacy AI Studio scaffold) ─────────────────────────────
+node_modules/
+dist/
+*.js.map
+
+# ── OS / Editor ────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ── Misc ───────────────────────────────────────────────────────────────────────
+zip.zip
+*.log
+tmp/
