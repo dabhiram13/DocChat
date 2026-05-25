@@ -17,6 +17,13 @@ from rag_pipeline import RAGPipeline
 
 load_dotenv()
 
+# ── Resolve API key: Streamlit secrets > env var > user input ──────────────────
+_secret_key = (
+    st.secrets.get("OPENROUTER_API_KEY", "")
+    if hasattr(st, "secrets")
+    else os.getenv("OPENROUTER_API_KEY", "")
+)
+
 # ── Page configuration ─────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="DocChat — RAG Q&A",
@@ -31,12 +38,17 @@ with st.sidebar:
     st.caption("RAG-Powered Document Q&A")
     st.divider()
 
-    api_key = st.text_input(
-        "🔑 OpenRouter API Key",
-        value=os.getenv("OPENROUTER_API_KEY", ""),
-        type="password",
-        help="Get your key at openrouter.ai/keys",
-    )
+    if _secret_key:
+        # Key is pre-configured — don't expose or ask for it
+        api_key = _secret_key
+        st.success("🔑 API key configured", icon="✅")
+    else:
+        # Local dev or self-hosted: let user supply their own key
+        api_key = st.text_input(
+            "🔑 OpenRouter API Key",
+            type="password",
+            help="Get your key at openrouter.ai/keys",
+        )
 
     st.divider()
 
