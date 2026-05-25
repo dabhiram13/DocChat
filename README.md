@@ -13,6 +13,8 @@
 
 ![DocChat UI](docs/screenshot.png)
 
+In the screenshot above, a resume PDF was uploaded and indexed into **6 chunks** inside ChromaDB. The question *"Tell me about the candidate's focused domain and relevant experience?"* was asked — DocChat retrieved the 4 most relevant chunks via cosine similarity and passed them as context to Llama 3.3 70B, which generated a structured, grounded answer with bullet points pulled directly from the document. No hallucination — every fact comes from the PDF.
+
 > **[👉 Try the live app](https://docchat-sd8wat9fehfnscohpysxce.streamlit.app/)** — bring your own [OpenRouter API key](https://openrouter.ai/keys) (free tier available)
 
 ---
