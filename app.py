@@ -57,7 +57,7 @@ with st.sidebar:
         | PDF parsing | `pypdf` |
         | Chunking | `RecursiveCharacterTextSplitter` |
         | Embeddings | `text-embedding-3-small` via OpenRouter |
-        | Vector store | **ChromaDB** (cosine similarity) |
+        | Vector store | **InMemoryVectorStore** (cosine similarity) |
         | LLM | **Llama 3.3 70B** via OpenRouter |
         """
     )
@@ -85,11 +85,7 @@ if uploaded_file and st.session_state.active_doc != uploaded_file.name:
             tmp_path = tmp.name
 
         try:
-            chroma_dir = tempfile.mkdtemp(prefix="docchat_chroma_")
-            pipeline = RAGPipeline(
-                api_key=api_key,
-                persist_directory=chroma_dir,
-            )
+            pipeline = RAGPipeline(api_key=api_key)
             n_chunks = pipeline.process_pdf(tmp_path)
 
             # Persist in session

@@ -1,11 +1,11 @@
 """
 DocChat — RAG Pipeline
 ======================
-Stack (as described on resume):
+Stack:
   • PDF parsing    : pypdf (via LangChain Document format)
   • Chunking       : RecursiveCharacterTextSplitter
   • Embeddings     : OpenAI text-embedding-3-small via OpenRouter
-  • Vector store   : ChromaDB (cosine similarity)
+  • Vector store   : InMemoryVectorStore (langchain-core, no native deps)
   • LLM            : OpenRouter API — Llama 3.3 70B (OpenAI-compatible)
 """
 
@@ -15,9 +15,9 @@ from typing import List, Tuple
 
 import pypdf
 from langchain_core.documents import Document
+from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-from langchain_chroma import Chroma
 from langchain_core.messages import SystemMessage, HumanMessage
 
 
@@ -31,8 +31,8 @@ class RAGPipeline:
     LLM_MODEL = "meta-llama/llama-3.3-70b-instruct"
     OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 
-    def __init__(self, api_key: str, persist_directory: str) -> None:
-        # ── OpenAI embeddings via OpenRouter (no torch/transformers needed) ────
+    def __init__(self, api_key: str) -> None:
+        # ── OpenAI embeddings via OpenRouter (no torch/protobuf needed) ────────
         self.embeddings = OpenAIEmbeddings(
             api_key=api_key,
             base_url=self.OPENROUTER_BASE_URL,
@@ -48,8 +48,7 @@ class RAGPipeline:
             max_tokens=1024,
         )
 
-        self.persist_directory = persist_directory
-        self.vectorstore: Chroma | None = None
+        self.vectorstore: InMemoryVectorStore | None = None
         self.retriever = None
 
     # ── Step 1: Ingest PDF ─────────────────────────────────────────────────────
@@ -83,11 +82,10 @@ class RAGPipeline:
         )
         chunks = splitter.split_documents(documents)
 
-        # Embed each chunk locally + persist in ChromaDB
-        self.vectorstore = Chroma.from_documents(
+        # Embed each chunk and store in memory (no native deps)
+        self.vectorstore = InMemoryVectorStore.from_documents(
             documents=chunks,
             embedding=self.embeddings,
-            persist_directory=self.persist_directory,
         )
 
         # Similarity retriever — return top-4 chunks per query
