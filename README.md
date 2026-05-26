@@ -1,4 +1,4 @@
-# 📄 DocChat — RAG-Powered Document Q&A
+# 📄 DocChat - RAG Powered Document Q&A
 
 > Upload any PDF. Ask questions in plain English. Get answers grounded in the document with exact page citations.
 
